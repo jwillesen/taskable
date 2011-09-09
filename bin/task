@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'taskable'
+require 'taskable/dependencies'
+Taskable::Dependencies.each do |d|
+  gem(*d)
+  require d[0] # simple assumption for now, may be false later.
+end
+
+require 'taskable/commands'
+Taskable::run(ARGV)
