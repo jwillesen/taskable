@@ -30,11 +30,28 @@ class Task
   end
   
   def complete?
-    remaining == 0
+    calculate_remaining == 0
   end
   
   def leaf?
     return subtasks.empty?
+  end
+  
+  def full_name
+    lineage = []
+    cur = self
+    until cur.nil? || cur.name == Taskable::RootName
+      lineage.unshift(cur.name)
+      cur = cur.parent
+    end
+    return lineage.join('.')
+  end
+
+  def calculate_remaining
+    return @remaining if @remaining
+    return nil if !estimate
+    calced = estimate - (spent || 0)
+    return [calced, 0].max
   end
 
 end
