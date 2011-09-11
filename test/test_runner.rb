@@ -29,7 +29,7 @@ class TestRunner < Test::Unit::TestCase
     runner = Taskable::Runner.new
     runner.potential_taskfiles = ["ThisDoesNotExist"]
     assert_equal(nil, runner.find_taskfile)
-    assert_equal(nil, runner.taskfile)
+    assert_raises(RuntimeError) { runner.taskfile }
   end
   
   

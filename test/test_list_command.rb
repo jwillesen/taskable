@@ -6,7 +6,7 @@ require 'taskable/commands'
 
 class TestListCommand < Test::Unit::TestCase
   def setup
-    @runner = Taskable::Runner.new
+    @runner = Taskable::Runner.empty_mock
     @list = Taskable::Commands::ListCommand.new(@runner)
     @list.config.format = "csv"
     @list.output = StringIO.new

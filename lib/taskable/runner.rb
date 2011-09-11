@@ -8,19 +8,28 @@ end
 
 module Taskable
   class Runner
-    attr_accessor :taskfile, :original_dir
-    attr_accessor :options
-    attr_accessor :root
+    
+    def self.empty_mock
+      mock = Runner.new
+      mock.taskfile = "empty_mock"
+      mock.root = Taskable::Task.new(Taskable::RootName)
+      return mock
+    end
+    
+    attr_writer :taskfile, :root
+    attr_accessor :original_dir
+    attr_accessor :config
     attr_accessor :potential_taskfiles
     
     RootName = "root"
     
     def initialize()
-      @cmd = create_parser()
+      @taskfile = nil
+      @root = nil
       @original_dir = Dir.pwd
-      @options = {}
-      @root = Task.new(RootName)
+      @config = {}
       @potential_taskfiles = ['Taskfile']
+      @cmd = create_parser()
     end
     
     def create_parser
@@ -41,29 +50,40 @@ module Taskable
     end
     
     def run(args)
-      if !find_taskfile
-        $stderr.puts "Could not find Taskfile"
+      begin
+        @cmd.parse(args)
+      rescue
+        $stderr.puts($!)
         exit 1
       end
-      
+    end
+    
+    def root
+      @root ||= parse_taskfile
+    end
+    
+    def taskfile
+      @taskfile ||= find_taskfile
+      raise "Taskfile not found" unless @taskfile
+      @taskfile
+    end
+    
+    def parse_taskfile
+      root_task = Taskable::Task.new(Taskable::RootName)
       # The magic incantations to get the DSL working at the top level
-      dsl = TaskDsl.new(root)
+      dsl = TaskDsl.new(root_task)
       dsl.instance_eval(File.read(taskfile), taskfile)
-      
-      @cmd.parse(args)
+      return root_task
     end
     
     def find_taskfile
-      return @taskfile if @taskfile
-      
       here = Dir.pwd
       while !(fn = dir_has_taskfile(here))
         parent = File.dirname(here)
         return nil if here == parent
         here = parent
       end
-      @taskfile = File.join(here, fn)
-      return @taskfile
+      return File.join(here, fn)
     end
     
     def dir_has_taskfile(dir)
@@ -75,6 +95,6 @@ module Taskable
       end
       return nil
     end
-  
+    
   end  
 end
