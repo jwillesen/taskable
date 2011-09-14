@@ -137,4 +137,42 @@ class TestListCommand < Test::Unit::TestCase
     
   end
   
+  def test_totals
+    @root.instance_exec do
+      task :first do
+        est 11
+        spent 3
+      end
+      
+      task :second do
+        est 22
+        spent 4
+        rem 10
+      end
+      
+      task :third do
+        est 33
+      end
+      
+      task :fourth
+      
+      task :fifth do
+        spent 5
+        rem 15
+      end
+      
+      task :sixth do
+        rem 20
+      end
+    end
+    execute
+    expected = {
+      :estimate => 11 + 22 + 33 + 0 + 0 + 0,
+      :spent => 3 + 4 + 0 + 0 + 5 + 0,
+      :remaining => 8 + 10 + 33 + 0 + 15 + 20,
+    }
+    assert_equal(expected, @list.totals)
+    
+  end
+  
 end

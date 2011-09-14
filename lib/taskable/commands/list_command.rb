@@ -20,6 +20,7 @@ module Taskable::Commands
     ValidFormats = %w(pretty csv)
     
     attr_accessor :config, :output
+    attr_reader :total_estimate, :total_spent, :total_remaining
     
     def initialize(runner)
       super('list', false)
@@ -28,6 +29,8 @@ module Taskable::Commands
       @config = Config.new
       @output = $stdout
       @filter = nil
+      
+      @total_estimate = @total_spent = @total_remaining = 0
       
       self.short_desc = "List specified tasks"
       self.description = "List the tasks as specified by command line parameters"
@@ -59,8 +62,13 @@ module Taskable::Commands
     end
     
     def print_format_pretty(tasks)
+      print_pretty_hr()
       print_pretty_header()
+      print_pretty_hr()
       print_pretty_tasks(tasks)
+      print_pretty_hr()
+      print_pretty_totals()
+      print_pretty_hr()
     end
     
     def print_format_csv(tasks)
@@ -85,15 +93,34 @@ module Taskable::Commands
         title = title.public_send(col.just, col.width)
         titles << title
       end
-      divider = titles.map { |title| '-' * title.size }.join('-+')
+      #divider = titles.map { |title| '-' * title.size }.join('-+')
       titles = titles.join(' |')
-      @output.puts titles, divider
+      #@output.puts titles, divider
+      @output.puts titles
+    end
+    
+    def print_pretty_hr
+      divider = DefaultColumns.map { |col| '-' * col.width}.join('-+')
+      @output.puts divider
+    end
+    
+    def print_pretty_totals
+      fields = DefaultColumns.map do |col|
+        case col.name
+        when 'name' then 'totals: '
+        when 'estimate' then @total_estimate.to_s
+        when 'spent' then @total_spent.to_s
+        when 'remaining' then @total_remaining.to_s
+        else '<unknown>'
+        end
+      end
+      @output.puts format_line(fields)
     end
     
     def print_pretty_tasks(tasks, depth=0)
       tasks.each do |elt|
         case elt
-        when Taskable::Task then @output.puts format_line(depth, elt)
+        when Taskable::Task then @output.puts format_task_line(depth, elt)
         when Array then print_pretty_tasks(elt, depth + 1)
         #else ???
         end
@@ -101,20 +128,29 @@ module Taskable::Commands
       
     end
     
-    def format_line(depth, task)
+    def format_task_line(depth, task)
       indent = " " * DefaultIndent * depth
-      fields = DefaultColumns.reduce([]) do |fields, col|
+      fields = DefaultColumns.map do |col|
         field = task.public_send(col.field).to_s
-        field = indent + field if fields.empty?
-        field = field.public_send(col.just, col.width)
-        fields << field
+        field = indent + field if col.name == 'name'
+        field
       end
-      return fields.join(' |')
+      return format_line(fields)
+    end
+    
+    def format_line(fields)
+      padded_fields = DefaultColumns.zip(fields).map do |col, field|
+          field.public_send(col.just, col.width)
+      end
+      return padded_fields.join(' |')
     end
     
     def filter_tasks(task)
       task.subtasks.reduce([]) do |list, subtask|
         if subtask.leaf? && passes_filter(subtask)
+          @total_estimate += subtask.estimate.to_i
+          @total_spent += subtask.spent.to_i
+          @total_remaining += subtask.calculate_remaining.to_i
           list << subtask
         elsif !subtask.leaf?
           sublist = filter_tasks(subtask)
@@ -138,6 +174,14 @@ module Taskable::Commands
         when config.in_progress then lambda { |t| !t.spent.nil? && t.spent > 0 && !t.complete? }
         else lambda {|t| true}
       end
+    end
+    
+    def totals()
+      return {
+        :estimate => @total_estimate,
+        :spent => @total_spent,
+        :remaining => @total_remaining,
+      }
     end
     
   end
