@@ -16,6 +16,7 @@ class Taskable::TaskDsl
   def estimate(n)
     @task.estimate = n
   end
+  alias est estimate
   
   def spent(n)
     @task.spent = n
@@ -24,6 +25,7 @@ class Taskable::TaskDsl
   def remaining(n)
     @task.remaining = n
   end
+  alias rem remaining
   
   def complete()
     @task.remaining = 0
