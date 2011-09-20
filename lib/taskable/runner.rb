@@ -45,6 +45,7 @@ module Taskable
       cmd.add_command(CmdParse::VersionCommand.new)
       
       cmd.add_command(Taskable::Commands::ListCommand.new(self))
+      cmd.add_command(Taskable::Commands::ProgressCommand.new(self))
       
       return cmd
     end

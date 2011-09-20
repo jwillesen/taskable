@@ -148,9 +148,9 @@ module Taskable::Commands
     def filter_tasks(task)
       task.subtasks.reduce([]) do |list, subtask|
         if subtask.leaf? && passes_filter(subtask)
-          @total_estimate += subtask.estimate.to_i
-          @total_spent += subtask.spent.to_i
-          @total_remaining += subtask.calculate_remaining.to_i
+          @total_estimate += subtask.estimate.to_f
+          @total_spent += subtask.spent.to_f
+          @total_remaining += subtask.calculate_remaining.to_f
           list << subtask
         elsif !subtask.leaf?
           sublist = filter_tasks(subtask)

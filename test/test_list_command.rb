@@ -1,27 +1,14 @@
-require 'cmdparse'
-require 'stringio'
-require 'test/unit'
-require 'taskable'
-require 'taskable/commands'
+require_relative 'command_test_helper'
 
 class TestListCommand < Test::Unit::TestCase
-  def setup
-    @runner = Taskable::Runner.empty_mock
-    @list = Taskable::Commands::ListCommand.new(@runner)
-    @list.config.format = "csv"
-    @list.output = StringIO.new
-    @root = @runner.root
+  include CommandTestHelper
+  
+  def create_command
+    cmd = Taskable::Commands::ListCommand.new(@runner)
+    cmd.config.format = "csv"
+    return cmd
   end
   
-  def output_lines
-    lines = @list.output.string.lines.to_a.drop(1)
-    lines.map(&:strip)
-  end
-  
-  def execute
-    @list.execute([])
-  end
-    
   def test_simple_csv_line
     @root.task :test do
       estimate 1
@@ -38,7 +25,7 @@ class TestListCommand < Test::Unit::TestCase
     end
     @root.task :other
     
-    @list.execute([])
+    execute
     expected = ["test,,,", "test.sub,,,", "other,,,"]
     assert_equal(expected, output_lines)
   end
@@ -57,7 +44,7 @@ class TestListCommand < Test::Unit::TestCase
   end
   
   def test_complete_flag
-    @list.config.complete = true
+    @command.config.complete = true
     setup_complete_tasks
     execute
     expected = ["complete,,,0", "parent_complete,,,", "parent_complete.child_complete,,,0"]
@@ -65,7 +52,7 @@ class TestListCommand < Test::Unit::TestCase
   end
   
   def test_incomplete_flag
-    @list.config.incomplete = true
+    @command.config.incomplete = true
     setup_complete_tasks
     execute
     expected = ["incomplete,,,", "parent_incomplete,,,", "parent_incomplete.child_incomplete,,,"]
@@ -73,7 +60,7 @@ class TestListCommand < Test::Unit::TestCase
   end
   
   def test_need_estimate
-    @list.config.need_estimate = true
+    @command.config.need_estimate = true
     @root.instance_exec do
       task(:estimated) { estimate 1 }
       task(:unestimated)
@@ -93,7 +80,7 @@ class TestListCommand < Test::Unit::TestCase
   end
   
   def test_in_progress
-    @list.config.in_progress = true
+    @command.config.in_progress = true
     @root.instance_exec do
       task(:progress) do
         estimate 3
@@ -171,8 +158,33 @@ class TestListCommand < Test::Unit::TestCase
       :spent => 3 + 4 + 0 + 0 + 5 + 0,
       :remaining => 8 + 10 + 33 + 0 + 15 + 20,
     }
-    assert_equal(expected, @list.totals)
+    assert_equal(expected, @command.totals)
     
+  end
+  
+  def test_floats
+    @root.instance_exec do
+      task :a do
+        est 1.5
+        spent 0.6
+      end
+      
+      task :b do
+        est 2.7
+        spent 1.3
+        rem 3.8
+      end
+    end
+    execute
+    expected = {
+      :estimate => 1.5 + 2.7,
+      :spent => 0.6 + 1.3,
+      :remaining => (1.5 - 0.6) + 3.8,
+    }
+    assert_equal(expected, @command.totals)
+    
+    expected = ["a,1.5,0.6,0.9", "b,2.7,1.3,3.8"]
+    assert_equal(expected, output_lines)
   end
   
 end
