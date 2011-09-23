@@ -64,4 +64,18 @@ class TestProgressCommand < Test::Unit::TestCase
     assert_equal(expected, output_lines)
   end
 
+  def test_days
+    @command.config.show_days = true
+    @command.config.hours_per_day = 4
+    @root.instance_exec do
+      task :t1 do
+        est 24
+        spent 8
+      end
+    end
+    execute
+    expected = ["2.0,6.0"]
+    assert_equal(expected, output_lines)
+  end
+
 end

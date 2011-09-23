@@ -7,6 +7,8 @@ module Taskable::Commands
     
     ValidFormats = %w(pretty csv)
     
+    DefaultHoursPerDay = 8
+    
     attr_accessor :config, :output
 
     
@@ -32,7 +34,7 @@ module Taskable::Commands
         end
         
         opts.on('-h', '--hours-per-day HOURS', Integer,
-          "Set the number of hours per day (default #{config.hours_per_day}).") do |hours|
+          "Set the number of hours per day (default #{DefaultHoursPerDay}).") do |hours|
           config.hours_per_day = hours
         end
         
@@ -46,10 +48,10 @@ module Taskable::Commands
     def validate_options
       # defaults
       config.format ||= ValidFormats[0]
-      config.hours_per_day ||= 8
+      config.hours_per_day ||= DefaultHoursPerDay
       
       raise "Invalid format: #{config.format}" unless ValidFormats.include?(config.format)
-      raise "Invalid argument: #{config.hours_per_day}" unless config.hours_per_day >= 0
+      raise "Invalid argument: #{config.hours_per_day}" unless config.hours_per_day > 0
     end
     
     def execute(args)
@@ -61,6 +63,7 @@ module Taskable::Commands
       end
       
       @total_estimate, @total_spent, @total_remaining = *calculate_totals(@runner.root)
+      convert_to_days() if config.show_days
       format_totals()
     end
     
@@ -72,6 +75,12 @@ module Taskable::Commands
           calculate_totals(subtask),
         ].reduce(:+)
       end
+    end
+    
+    def convert_to_days()
+      @total_estimate /= config.hours_per_day.to_f
+      @total_spent /= config.hours_per_day.to_f
+      @total_remaining /= config.hours_per_day.to_f
     end
     
     def percent_complete
