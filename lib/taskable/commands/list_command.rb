@@ -20,7 +20,7 @@ module Taskable::Commands
     ValidFormats = %w(pretty csv)
     
     attr_accessor :config, :output
-    attr_reader :total_estimate, :total_spent, :total_remaining
+    attr_reader :total_estimate, :total_spent, :total_remaining, :name_filters
     
     def initialize(runner)
       super('list', false)
@@ -29,6 +29,7 @@ module Taskable::Commands
       @config = Config.new
       @output = $stdout
       @filter = nil
+      @name_filters = []
       
       @total_estimate = @total_spent = @total_remaining = 0
       
@@ -43,15 +44,19 @@ module Taskable::Commands
       end
     end
       
-    def validate_options
+    def validate_options(args)
       config.format ||= ValidFormats[0]
+      
+      @name_filters = args.map { |arg| Regexp.compile(arg) }
+      
       raise "Invalid format: #{config.format}" unless ValidFormats.include?(config.format)
       raise "Conflicting completion flags" if config.complete && config.incomplete
     end
     
     def execute(args)
+      
       begin
-        validate_options
+        validate_options(args)
       rescue
         @output.puts $!
         exit 1
@@ -163,7 +168,12 @@ module Taskable::Commands
     
     def passes_filter(task)
       init_filter_from_options
-      return @filter[task]
+      return passes_name_filter(task) && @filter[task]
+    end
+    
+    def passes_name_filter(task)
+      fn = task.full_name
+      @name_filters.empty? || @name_filters.any? { |filter| filter.match(fn) } 
     end
     
     def init_filter_from_options

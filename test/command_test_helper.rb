@@ -17,8 +17,8 @@ module CommandTestHelper
     lines.map(&:strip)
   end
   
-  def execute
-    @command.execute([])
+  def execute(*name_filters)
+    @command.execute(name_filters)
   end
 
 end

@@ -187,4 +187,34 @@ class TestListCommand < Test::Unit::TestCase
     assert_equal(expected, output_lines)
   end
   
+  def test_name_filters
+    @root.instance_exec do
+      task :abc do
+        task :sub
+      end
+      
+      task :def do
+        task :sub
+      end
+    end
+    
+    execute("abc")
+    expected = ["abc,,,", "abc.sub,,,"]
+    assert_equal(expected, output_lines)
+  end
+  
+  def test_multiple_filters
+    @root.instance_exec do
+      task :abc 
+      task :def 
+      task :ghi 
+    end
+    
+    execute('c', 'e')
+    expected = ['abc,,,','def,,,']
+    assert_equal(expected, output_lines)
+    
+  end
+  
+  
 end
