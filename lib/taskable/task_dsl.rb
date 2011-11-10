@@ -19,7 +19,8 @@ class Taskable::TaskDsl
   alias est estimate
   
   def spent(n)
-    @task.spent = n
+    @task.spent ||= 0
+    @task.spent += n
   end
   
   def remaining(n)

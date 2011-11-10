@@ -24,6 +24,7 @@ class TestTask < Test::Unit::TestCase
       desc "description"
       estimate 4
       spent 2
+      spent 3
       remaining 3
       note "note"
       note "second note"
@@ -31,7 +32,7 @@ class TestTask < Test::Unit::TestCase
     assert_equal(@root, sub.parent)
     assert_equal("description", sub.description)
     assert_equal(4.0, sub.estimate)
-    assert_equal(2.0, sub.spent)
+    assert_equal(5.0, sub.spent)
     assert_equal(3.0, sub.remaining)
     assert_equal(2, sub.notes.size)
     assert_equal("note", sub.notes[0])
