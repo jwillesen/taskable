@@ -31,6 +31,7 @@ class Taskable::TaskDsl
   def complete()
     @task.remaining = 0
   end
+  alias done complete
   
   def note(str)
     @task.notes << str.to_s
