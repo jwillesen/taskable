@@ -13,7 +13,7 @@ class TestListCommand < Test::Unit::TestCase
     @root.task :test do
       estimate 1
       spent 2
-      remaining 3
+      add 4
     end
     execute
     assert_equal(["test,1,2,3"], output_lines)
@@ -91,11 +91,6 @@ class TestListCommand < Test::Unit::TestCase
         estimate 3
       end
       
-      task(:implicit_complete) do
-        estimate 3
-        spent 3
-      end
-      
       task(:explicit_complete) do
         estimate 3
         spent 1
@@ -134,7 +129,7 @@ class TestListCommand < Test::Unit::TestCase
       task :second do
         est 22
         spent 4
-        rem 10
+        add -8
       end
       
       task :third do
@@ -145,11 +140,11 @@ class TestListCommand < Test::Unit::TestCase
       
       task :fifth do
         spent 5
-        rem 15
+        add 20
       end
       
       task :sixth do
-        rem 20
+        add 20
       end
     end
     execute
@@ -172,7 +167,7 @@ class TestListCommand < Test::Unit::TestCase
       task :b do
         est 2.7
         spent 1.3
-        rem 3.8
+        add 3.8 + 1.3 - 2.7 # want 3.8 remaining
       end
     end
     execute

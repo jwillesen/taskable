@@ -1,7 +1,8 @@
+require 'rubygems'
 require 'rake/clean'
-require 'rake/gempackagetask'
 require 'rake/testtask'
-require 'rake/rdoctask'
+#require 'rdoc/task' # this seems to require the built-in, which requires the deprecated rake version. I don't want to figure it out right now, and I'd rather use yardoc anyway
+require 'rubygems/package_task'
 
 require_relative 'lib/taskable/version'
 require_relative 'lib/taskable/dependencies'
@@ -31,18 +32,19 @@ spec = Gem::Specification.new do |s|
   end
 end
 
-Rake::GemPackageTask.new(spec).define
+#Rake::GemPackageTask.new(spec).define
+Gem::PackageTask.new(spec).define
 
 Rake::TestTask.new do |t|
   #t.verbose = true
 end
 task :default => :test
 
-Rake::RDocTask.new do |rd|
-  rd.main = "README.md"
-  rd.rdoc_files.include("README.md")
-  rd.rdoc_files.include("lib/**/*.rb")
-end
+#RDoc::Task.new do |rd|
+#  rd.main = "README.md"
+#  rd.rdoc_files.include("README.md")
+#  rd.rdoc_files.include("lib/**/*.rb")
+#end
 
 if self.class.const_defined? :YARD
   YARD::Rake::YardocTask.new do |yd|

@@ -14,7 +14,7 @@ module Taskable::Commands
       Column["name", :ljust, 40, :name],
       Column["estimate", :rjust, 10, :estimate],
       Column["spent", :rjust, 10, :spent],
-      Column["remaining", :rjust, 10, :calculate_remaining],
+      Column["remaining", :rjust, 10, :remaining],
       ]
 
     ValidFormats = %w(pretty csv)
@@ -155,7 +155,7 @@ module Taskable::Commands
         if subtask.leaf? && passes_filter(subtask)
           @total_estimate += subtask.estimate.to_f
           @total_spent += subtask.spent.to_f
-          @total_remaining += subtask.calculate_remaining.to_f
+          @total_remaining += subtask.remaining.to_f
           list << subtask
         elsif !subtask.leaf?
           sublist = filter_tasks(subtask)

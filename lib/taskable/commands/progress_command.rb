@@ -71,7 +71,7 @@ module Taskable::Commands
       task.subtasks.reduce(Vector[0, 0, 0]) do |totals, subtask|
         [
           totals,
-          Vector[subtask.estimate.to_f, subtask.spent.to_f, subtask.calculate_remaining.to_f],
+          Vector[subtask.estimate.to_f, subtask.spent.to_f, subtask.remaining.to_f],
           calculate_totals(subtask),
         ].reduce(:+)
       end

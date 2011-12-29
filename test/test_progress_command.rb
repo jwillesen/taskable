@@ -20,13 +20,13 @@ class TestProgressCommand < Test::Unit::TestCase
       task :a do
         est 3.1
         spent 2.1
-        rem 1.1
+        add 1.1 + 2.1 - 3.1 #rem 1.1
       end
       
       task :b do
         est 10.3
         spent 4.3
-        rem 6.3
+        add 6.3 + 4.3 - 10.3 #rem 6.3
       end
     end
     execute
@@ -44,7 +44,7 @@ class TestProgressCommand < Test::Unit::TestCase
         
         task :b do
           spent 2
-          rem 3
+          add 3 + 2 # rem 3
         end
       end
       
@@ -55,7 +55,7 @@ class TestProgressCommand < Test::Unit::TestCase
       
         task :b do
           spent 5
-          rem 6
+          add 6 + 5 #rem 6
         end
       end
     end

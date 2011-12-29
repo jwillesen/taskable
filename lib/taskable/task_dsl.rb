@@ -14,22 +14,23 @@ class Taskable::TaskDsl
   alias desc description
   
   def estimate(n)
+    raise "A task may only have one estimate." if @task.estimate
     @task.estimate = n
   end
   alias est estimate
+  
+  def add(n)
+    @task.additional ||= 0
+    @task.additional += n
+  end
   
   def spent(n)
     @task.spent ||= 0
     @task.spent += n
   end
   
-  def remaining(n)
-    @task.remaining = n
-  end
-  alias rem remaining
-  
   def complete()
-    @task.remaining = 0
+    @task.complete = true
   end
   alias done complete
   

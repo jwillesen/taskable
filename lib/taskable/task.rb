@@ -4,7 +4,8 @@ class Task
   attr_reader :name
   attr_accessor :subtasks, :parent
   attr_accessor :description, :notes
-  attr_accessor :estimate, :spent, :remaining
+  attr_accessor :estimate, :spent, :additional
+  attr_accessor :complete
   
   def initialize(name, parent=nil, &block)
     @name = name.to_s
@@ -14,7 +15,8 @@ class Task
     @notes = []
     @estimate = nil
     @spent = nil
-    @remaining = nil
+    @additional = nil
+    @complete = false
     Taskable::TaskDsl.new(self, &block) if block
   end
   
@@ -30,7 +32,7 @@ class Task
   end
   
   def complete?
-    calculate_remaining == 0
+    @complete
   end
   
   def leaf?
@@ -47,10 +49,10 @@ class Task
     return lineage.join('.')
   end
 
-  def calculate_remaining
-    return @remaining if @remaining
-    return nil if !estimate
-    calced = estimate - (spent || 0)
+  def remaining
+    return 0 if complete?
+    return nil if !(estimate || additional)
+    calced = (estimate || 0) + (additional || 0) - (spent || 0)
     return [calced, 0].max
   end
 

@@ -1,5 +1,5 @@
 require 'cmdparse'
-require 'FileUtils'
+require 'fileutils'
 require 'test/unit'
 require 'taskable'
 require 'taskable/commands'
